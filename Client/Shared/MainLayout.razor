@@ -1,0 +1,46 @@
+﻿@inherits LayoutComponentBase
+@inject AuthenticationStateProvider authStateProvider
+@inject NavigationManager navManager
+@using ADIRA.Client.Authentication
+<div class="page" style="height:100%; overflow:hidden">
+
+<AuthorizeView>
+    <Authorized>
+            <div class="sidebar">
+
+                <NavMenu />
+            </div>
+        </Authorized>
+   <NotAuthorized></NotAuthorized>
+</AuthorizeView>
+   
+
+    <main>
+        <div class="top-row px-4">
+             <AuthorizeView>
+                <Authorized>
+                    <a @onclick="Logout" href="javascript:void(0)">Logout</a>
+                   
+                </Authorized>
+                <NotAuthorized>
+                    <a href="/login">Login</a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+        <article class="content px-4" style="flex:1; overflow:auto ">
+            @Body
+        </article>
+        <footer style="display:flex; height:30px; justify-content:space-between">
+            <img alt="footer" src="img/footer1.webp" height="30"/>
+            <img alt="footer" src="img/footer2.webp" height="30" />
+        </footer>
+    </main>
+</div>
+@code {
+    private async Task Logout()
+    {
+        var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
+        await customAuthStateProvider.UpdateAuthenticationState(null);
+        navManager.NavigateTo("/", true);
+    }
+}

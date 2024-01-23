@@ -1,0 +1,38 @@
+﻿@if (EmployeesData != null && EmployeesData.Any()@* && SecretSantaEmployeesData == null*@)
+{
+   
+    <div>
+        <h3>Employee Details</h3>
+        <hr />
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Entity</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Department</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var employee in EmployeesData)
+                {
+                    <tr>
+                        <td>@employee.ID</td>
+                        <td>@employee.Entity</td>
+                        <td>@employee.Name</td>
+                        <td>@employee.Email</td>
+                        <td>@employee.Department</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public List<Employee> EmployeesData { get; set; }
+
+}
