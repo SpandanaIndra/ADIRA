@@ -3,6 +3,8 @@ using ADIRA.Shared.BusinessDataObjects;
 using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
+using System.Text.Json.Serialization;
+
 
 namespace ADIRA.Client.Authentication
 {
@@ -60,7 +62,10 @@ namespace ADIRA.Client.Authentication
             }
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimsPrincipal)));
         }
-        public async Task<string> GetToken()
+     
+
+    
+    public async Task<string> GetToken()
         {
             var result = string.Empty;
             try

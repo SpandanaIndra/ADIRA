@@ -1,14 +1,37 @@
-﻿using ADIRA.Shared.BusinessDataObjects;
+﻿using ADIRA.Client.Authentication;
+using ADIRA.Shared.BusinessDataObjects;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Vml.Office;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Newtonsoft.Json;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 
 namespace ADIRA.Client.Pages
 {
     public partial class SecretSanta
     {
+        private string selectedEntity;
+        private string selectedLocation;
+        private bool buttonClicked;
+
+        private List<Entity> entities;
+        private List<EmployeeLocation> locations = new List<EmployeeLocation>
+        {
+           
+            new EmployeeLocation { Name="Hyderabad"},
+            new EmployeeLocation { Name="Banglore"}
+        };
+
+        
+
+
+        private bool isLoading;
+        private bool isSuccess;
         private List<Employee> EmployeesData { get; set; }
         private List<SecretSantaData> SecretSantaEmployeesData { get; set; }
         private string ErrorMessage { get; set; }
@@ -17,28 +40,60 @@ namespace ADIRA.Client.Pages
         private string SantaDataPassword { get; set; }
         private bool ShowSantaPasswordInput { get; set; } = false;
 
-       
+        int entId;
+
+
         private async Task RunSecretSantaAllocation()
         {
-            ClearInfoLabels();
-            var response = await httpClient.PostAsJsonAsync("/api/SecretSanta/allocate", string.Empty);
-            if (response.IsSuccessStatusCode)
+           
+            buttonClicked = true;
+            if (!string.IsNullOrEmpty(selectedLocation)&&!string.IsNullOrEmpty(selectedEntity))
             {
-                SuccessMessage = "Secret Santa Allocations Have Been Successfully Done";
+                ClearInfoLabels();
+                if (selectedEntity != "")
+                {
+                     entId = Convert.ToInt32(selectedEntity);
+
+                }
+               
+                string loc = selectedLocation;
+                ClearInfoLabels();
+                // Obtain the JWT token from your authentication state
+                var customStateProvider = (CustomAuthenticationStateProvider)_authStateProvider;
+
+                var jwtToken = await customStateProvider.GetToken();
+
+                if (jwtToken != null)
+                {
+                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(jwtToken);
+                   
+                    var apiUrl = $"/api/SecretSanta/allocate/{entId}/{loc}";
+
+                    // Make the API call
+                    var response = await httpClient.PostAsJsonAsync(apiUrl, string.Empty);
+
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        SuccessMessage = "Secret Santa Allocations Have Been Successfully Done";
+                    }
+                    else
+                    {
+                        ErrorMessage = "Error Occured, Reason: " + await response.Content.ReadAsStringAsync();
+                    }
+                }
+                buttonClicked = false;
             }
-            else
-            {
-                ErrorMessage = "Error Occured, Reason: " + await response.Content.ReadAsStringAsync();
-            }
+           
         }
 
-        private async Task GetPasswordFieldForSecretSantaEmployeeData()
+       /* private async Task GetPasswordFieldForSecretSantaEmployeeData()
         {
             ClearInfoLabels();
             ShowSantaPasswordInput = true;
             EmployeesData = null;
             SecretSantaEmployeesData = null;
-        }
+        }*/
 
         private async Task GetSecretSantaEmployeeDataFromServer()
         {
@@ -50,46 +105,56 @@ namespace ADIRA.Client.Pages
             }
             else
             {
-                var response = await httpClient.GetAsync($"/api/file/SecretSanta/read/{SantaDataPassword}");
+                var secretSantaEmployeesData = await httpClient.GetAsync($"/api/FileUploadDB/SecretSanta/read/{SantaDataPassword}");
                 EmployeesData = null;
                 ShowSantaPasswordInput = false;
                 SantaDataPassword = null;
 
-                if (response.IsSuccessStatusCode)
+                if(secretSantaEmployeesData.IsSuccessStatusCode)
                 {
-                    SecretSantaEmployeesData = JsonConvert.DeserializeObject<List<SecretSantaData>>(await response.Content.ReadAsStringAsync());
+                    SecretSantaEmployeesData = JsonConvert.DeserializeObject<List<SecretSantaData>>(await secretSantaEmployeesData.Content.ReadAsStringAsync());
                 }
                 else
                 {
-                    ErrorMessage = $"Error Occured, Reason: {await response.Content.ReadAsStringAsync()}";
+                    ErrorMessage = $"Error Occured, Reason: {await secretSantaEmployeesData.Content.ReadAsStringAsync()}";
                 }
             }
         }
 
-        private async Task SendEmailsToEmployees()
-        {
-            SendEmailButtonDisabled = true;
-            ClearInfoLabels();
-            SuccessMessage = "Processing, please wait...";
-
-            var response = await httpClient.PostAsJsonAsync("/api/SecretSanta/sendmails", string.Empty);
-            if (response.IsSuccessStatusCode)
-            {
-                SendEmailButtonDisabled = false;
-                SuccessMessage = "25 Secret Santa mails have been successfully sent, please click Send Emails button again for the next batch";
-            }
-            else
-            {
-                SendEmailButtonDisabled = false;
-                SuccessMessage = null;
-                ErrorMessage = "Error Occured, Reason: " + await response.Content.ReadAsStringAsync();
-            }
-        }
+        
 
         private void ClearInfoLabels()
         {
             ErrorMessage = string.Empty;
             SuccessMessage = string.Empty;
         }
+
+
+        private bool isPopupVisible = false;
+
+      
+
+        protected override async Task OnInitializedAsync()
+        {
+            var entity = await httpClient.GetAsync($"/api/FileUploadDB/entity/read");
+            if (entity.IsSuccessStatusCode)
+            {
+                entities = JsonConvert.DeserializeObject<List<Entity>>(await entity.Content.ReadAsStringAsync());
+            }
+            else
+            {
+                ErrorMessage = $"Error Occured, Reason: {await entity.Content.ReadAsStringAsync()}";
+            }
+        }
+
+        
+
+        void ClosePopup()
+        {
+            isPopupVisible = false;
+            isSuccess = false;
+            StateHasChanged();
+        }
+      
     }
 }

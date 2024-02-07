@@ -29,6 +29,10 @@ builder.Services.AddAuthentication(o =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(JwtAuthenticationManager.Jwt_Security_Key)),
         ValidateIssuer = false,
         ValidateAudience = false,
+
+
+
+
     };
 });
 
@@ -61,6 +65,8 @@ app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 
 
 app.MapRazorPages();
@@ -71,6 +77,6 @@ app.Run();
 
 static void DIContainerAddServices(IServiceCollection services)
 {
-    services.AddScoped<ISecretSantaService, SecretSantaService>();
+    services.AddScoped<ISecretSantaService, SecretSantaServiceDB>();
     services.AddScoped<SendNotification>();
 }

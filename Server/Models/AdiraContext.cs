@@ -19,13 +19,11 @@ public partial class AdiraContext : DbContext
 
     public virtual DbSet<Employee> Employees { get; set; }
 
-    public virtual DbSet<EmployeeDataFromFile> EmployeeDataFromFiles { get; set; }
-
     public virtual DbSet<EntityL> EntityLs { get; set; }
 
     public virtual DbSet<Role> Roles { get; set; }
 
-    public virtual DbSet<RoleL> RoleLs { get; set; }
+    public virtual DbSet<SecretSantaDatum> SecretSantaData { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
 
@@ -54,14 +52,17 @@ public partial class AdiraContext : DbContext
 
         modelBuilder.Entity<Employee>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Employee__3214EC078C0DA9AF");
+            entity.HasKey(e => e.EmployeeId).HasName("PK__Employee__7AD04F116A22EC5A");
 
             entity.ToTable("Employee");
 
+            entity.Property(e => e.EmployeeId)
+                .HasMaxLength(50)
+                .IsUnicode(false);
             entity.Property(e => e.Email)
                 .HasMaxLength(500)
                 .IsUnicode(false);
-            entity.Property(e => e.EmployeeId)
+            entity.Property(e => e.Location)
                 .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.Name)
@@ -70,43 +71,19 @@ public partial class AdiraContext : DbContext
 
             entity.HasOne(d => d.Department).WithMany(p => p.Employees)
                 .HasForeignKey(d => d.DepartmentId)
-                .HasConstraintName("FK__Employee__Depart__59FA5E80");
+                .HasConstraintName("FK__Employee__Depart__656C112C");
 
             entity.HasOne(d => d.Entity).WithMany(p => p.Employees)
                 .HasForeignKey(d => d.EntityId)
-                .HasConstraintName("FK__Employee__Entity__59063A47");
+                .HasConstraintName("FK__Employee__Entity__6477ECF3");
 
             entity.HasOne(d => d.Role).WithMany(p => p.Employees)
                 .HasForeignKey(d => d.RoleId)
-                .HasConstraintName("FK__Employee__RoleId__5812160E");
+                .HasConstraintName("FK__Employee__RoleId__6383C8BA");
 
             entity.HasOne(d => d.User).WithMany(p => p.Employees)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__Employee__UserId__571DF1D5");
-        });
-
-        modelBuilder.Entity<EmployeeDataFromFile>(entity =>
-        {
-            entity.HasKey(e => e.EmployeeDataFromFileId).HasName("PK__Employee__560C15B26986B2F3");
-
-            entity.ToTable("EmployeeDataFromFile");
-
-            entity.Property(e => e.Department)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-            entity.Property(e => e.Email)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-            entity.Property(e => e.Entity)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-            entity.Property(e => e.Id)
-                .HasMaxLength(100)
-                .IsUnicode(false)
-                .HasColumnName("ID");
-            entity.Property(e => e.Name)
-                .HasMaxLength(100)
-                .IsUnicode(false);
+                .HasConstraintName("FK__Employee__UserId__628FA481");
         });
 
         modelBuilder.Entity<EntityL>(entity =>
@@ -142,20 +119,34 @@ public partial class AdiraContext : DbContext
             entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
         });
 
-        modelBuilder.Entity<RoleL>(entity =>
+        modelBuilder.Entity<SecretSantaDatum>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("Role_L");
+            entity.HasKey(e => e.Id).HasName("PK__SecretSa__3214EC07AB074C71");
 
-            entity.Property(e => e.Code)
-                .HasMaxLength(50)
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(20)
                 .IsUnicode(false);
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
-            entity.Property(e => e.Name)
-                .HasMaxLength(500)
+            entity.Property(e => e.EmployeeId)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.SecretSantaEmployeeId)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(20)
                 .IsUnicode(false);
             entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Employee).WithMany(p => p.SecretSantaDatumEmployees)
+                .HasForeignKey(d => d.EmployeeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__SecretSan__Emplo__6EF57B66");
+
+            entity.HasOne(d => d.SecretSantaEmployee).WithMany(p => p.SecretSantaDatumSecretSantaEmployees)
+                .HasForeignKey(d => d.SecretSantaEmployeeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__SecretSan__Secre__6FE99F9F");
         });
 
         modelBuilder.Entity<User>(entity =>

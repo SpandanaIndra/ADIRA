@@ -18,7 +18,7 @@ namespace ADIRA.Server.Services.Implementations
             _configuration = configuration;
         }
 
-        public async Task<int> AllotSecretSanta()
+        public async Task<int> AllotSecretSanta(string employeeId, int entityId, string location)
         {
             List<SecretSantaData> secretSantaEmployees = new();
             string jsonData, folderPath = _configuration["FileStoragePath"];

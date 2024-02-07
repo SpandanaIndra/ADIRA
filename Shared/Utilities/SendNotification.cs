@@ -72,7 +72,7 @@ namespace ADIRA.Shared.Utilities
                 {
                     smtp.Connect("smtp.gmail.com", 587, false);
 
-                    smtp.Authenticate("adira@techwishgroup.com", "TwA%D@R#25");
+                    smtp.Authenticate("adira@techwishgroup.com", /*"TwA%D@R#25"*/"");
 
                     response = smtp.Send(email);
                     smtp.Disconnect(true);

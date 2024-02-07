@@ -13,17 +13,28 @@
 
 
 <!-- Popup Component -->
-<div class="modal-overlay" style="display: @(isPopupVisible ? "flex" : "none")">
+<div class="modal-overlay" style="display: @(isPopupVisible ? "flex" : "none");">
     <div class="modal-content">
         <div class="modal-header">
             <h3>Manage Employees</h3>
             <button class="btn-close" @onclick="ClosePopup">×</button>
         </div>
         <div class="modal-body">
-            <InputFile accept=".xlsx" OnChange="HandleFileChange" class="form-control" />
+            <InputFile accept=".xlsx" OnChange="HandleFileChange" class="form-control" /> <br />
           @* <InputFile OnChange="HandleFileChange" />
            <button @onclick="UploadFile">Upload</button>*@
-            <br />
+            @if (isLoading)
+            {
+                <p>Uploading...</p>
+            }
+           @if(isSuccess)
+            {
+                <p style="color:green">File Uploaded Sucessfully...</p>
+            }
+            @if(ErrorMessage!="")
+            {
+                <p>@ErrorMessage</p>
+            }
            
         </div>
     </div>
@@ -31,5 +42,7 @@
 
 @*<button type="button" class="btn btn-primary" @onclick="GetEmployeeDataFromServer">Show Saved Employee Data</button>
 <br />
-*@<Employees EmployeesData="@EmployeesData"></Employees>
+*@
+
+<Employees EmployeesData="@EmployeesData" Result="HandleDelete"></Employees>
 

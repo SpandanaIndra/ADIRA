@@ -5,18 +5,22 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Newtonsoft.Json;
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 
 namespace ADIRA.Client.Pages
 {
     public partial class ManageEmployees
     {
-       
+        private bool isLoading;
+        private bool isSuccess;
+
         private string ErrorMessage { get; set; }
         private string SuccessMessage { get; set; }
-
         private List<Employee> EmployeesData { get; set; }
         private async Task HandleFileChange(InputFileChangeEventArgs e)
         {
+            isLoading = true;
+            isSuccess=false;
             ClearInfoLabels();
             var file = e.File;
 
@@ -75,6 +79,8 @@ namespace ADIRA.Client.Pages
                 }
 
                 await SaveDataToServer(EmployeesData);
+                isLoading = false;
+                await GetEmployeeDataFromServer();
             }
             else
             {
@@ -99,17 +105,31 @@ namespace ADIRA.Client.Pages
 
         private async Task SaveDataToServer(IEnumerable<Employee> employeesData)
         {
+
             var response = await httpClient.PostAsJsonAsync("/api/FileUploadDB/employee/save", employeesData);
             if (!response.IsSuccessStatusCode)
             {
+                isSuccess= false;
                 ErrorMessage = "Error Occured, Reason: " + await response.Content.ReadAsStringAsync();
             }
+            isSuccess = true;
         }
 
         protected override async Task OnInitializedAsync()
         {
             await GetEmployeeDataFromServer();
             StateHasChanged();
+
+        }
+        private async Task HandleDelete(bool result)
+        {
+            if (result)
+            {
+               await GetEmployeeDataFromServer();
+                StateHasChanged();
+                
+            }
+
         }
 
         private async Task GetEmployeeDataFromServer()
@@ -143,6 +163,7 @@ namespace ADIRA.Client.Pages
         void ClosePopup()
         {
             isPopupVisible = false;
+            isSuccess = false;
             StateHasChanged();
         }
 

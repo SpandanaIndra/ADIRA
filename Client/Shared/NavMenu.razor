@@ -20,15 +20,8 @@
                 </div>
             </Authorized>
                 </AuthorizeView>
-        <AuthorizeView Roles="Administrator">
-            <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="secretsanta">
-                        <span class="oi oi-person" aria-hidden="true"></span> Secret Santa
-                    </NavLink>
-                </div>
-            </Authorized>
-        </AuthorizeView>
+        
+        
         <AuthorizeView Roles="Administrator">
             <Authorized>
                 <div class="nav-item px-3">
@@ -38,6 +31,7 @@
                 </div>
             </Authorized>
         </AuthorizeView>
+
         <AuthorizeView Roles="Administrator,User">
             <Authorized>
                 <div class="nav-item px-3">
@@ -48,7 +42,23 @@
             </Authorized>
         </AuthorizeView>
 
-       
+        <AuthorizeView Roles="Administrator">
+            <Authorized>
+                <div class="nav-item px-3 dropdown" @onmouseover="ShowDropdown" @onmouseout="HideDropdown">
+                    <NavLink class="nav-link ">
+                        <span class="oi oi-person" aria-hidden="true"></span> Secret Santa
+                        @*<span class="caret"></span>*@
+                    </NavLink>
+                    <div class="dropdown-content" style="display: @(@isDropdownVisible ? "block" : "none");">
+                        <ul class="nav-list" style="list-style-type:disc">
+                            <li><NavLink style="color:white" class="nav-link" href="secretsanta">Allocate Santa Page</NavLink></li>
+                            <li><NavLink class="nav-link" href="revealSecretSanta">Reveal Secret Santa</NavLink></li>
+
+                        </ul>
+                    </div>
+                </div>
+            </Authorized>
+        </AuthorizeView>
        
         
     </nav>
@@ -56,6 +66,7 @@
 
 @code {
     private bool collapseNavMenu = true;
+    private bool isDropdownVisible = false;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
@@ -63,4 +74,16 @@
     {
         collapseNavMenu = !collapseNavMenu;
     }
+
+    private void ShowDropdown()
+    {
+        isDropdownVisible = true;
+    }
+
+    private void HideDropdown()
+    {
+        isDropdownVisible = false;
+    }
+
 }
+

@@ -35,6 +35,7 @@ namespace ADIRA.Server.Authentication
             {
                 new Claim(ClaimTypes.Name,useraccount.UserName),
                 new Claim(ClaimTypes.Role,useraccount.Role)
+               
             });
             var signingCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(tokenKey),

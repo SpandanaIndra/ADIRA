@@ -1,6 +1,5 @@
 ﻿@if (EmployeesData != null && EmployeesData.Any()@* && SecretSantaEmployeesData == null*@)
 {
-   
     <div>
         <h3>Employee Details</h3>
         <hr />
@@ -12,6 +11,7 @@
                     <th>Name</th>
                     <th>Email</th>
                     <th>Department</th>
+                    <th>Action</th>
                 </tr>
             </thead>
 
@@ -24,15 +24,32 @@
                         <td>@employee.Name</td>
                         <td>@employee.Email</td>
                         <td>@employee.Department</td>
+                        <td>
+
+                            <div class="button-container">
+                                <button class="btn sm" @onclick="(()=>DeleteEmployee(employee.ID))">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+
+                                <button class="btn sm" @onclick="(()=>EditEmployee(employee))">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+
+                        </td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
-}
-
-@code {
-    [Parameter]
-    public List<Employee> EmployeesData { get; set; }
 
 }
+<!-- Add this line to your HTML file -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha384-ez9FXH5Y3bBiyrV7kxIepFiTVZPmT5f/kW6jxXGmTPIv4jC4g4XJGcY/EAtGJpMe" crossorigin="anonymous">
+<style>
+    .button-container {
+        display: flex; /* or display: grid; */
+        gap: 3px; /* Adjust the gap as needed */
+    }
+</style>
+

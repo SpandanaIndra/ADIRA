@@ -1,4 +1,9 @@
 ﻿using ADIRA.Server.Models;
+using ADIRA.Shared.BusinessDataObjects;
+using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Drawing.Diagrams;
+using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Vml.Office;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,9 +17,11 @@ namespace ADIRA.Server.Controllers
     public class FileUploadDBController : ControllerBase
     {
         private readonly AdiraContext context;
-        public FileUploadDBController(AdiraContext _context)
+        private readonly IConfiguration _configuration;
+        public FileUploadDBController(AdiraContext _context, IConfiguration configuration)
         {
             context= _context;
+            _configuration= configuration;
         }
         [HttpPost("employee/save")]
         public async Task<IActionResult> SaveEmployeeJsonData([FromBody] IEnumerable<ADIRA.Shared.BusinessDataObjects.Employee> employeeData)
@@ -37,7 +44,7 @@ namespace ADIRA.Server.Controllers
                             // Check and insert into DepartmentL if necessary
                             int departmentId = GetOrCreateLookupId(context.DepartmentLs, "Name", rowData.Department,rowData.ID);
 
-                            Employee employee = new Employee()
+                            ADIRA.Server.Models.Employee employee = new ADIRA.Server.Models.Employee()
                             {
                                 EmployeeId = rowData.ID,
                                 Name = rowData.Name,
@@ -153,6 +160,179 @@ namespace ADIRA.Server.Controllers
 
             return Ok(employeesWithDetails);
         }
+
+
+       
+        [HttpGet("secretsanta/read/{targetYear:int}")]
+        public IActionResult ReadSecretSantaJsonData([FromRoute] int targetYear)
+        {
+           
+               
+                List<SecretSantaData> secretSantaDatas = new List<SecretSantaData>();
+            if (targetYear!=0)
+            {
+                var secret = context.SecretSantaData.Where(e => ((DateTime)e.CreatedDate).Year == targetYear).ToList();
+
+          
+
+                if (secret!=null)
+                {
+                    foreach(var si in  secret)
+                    {
+                        var emp=context.Employees.FirstOrDefault(s=>s.EmployeeId==si.EmployeeId);
+                        var semp= context.Employees.FirstOrDefault(s => s.EmployeeId == si.SecretSantaEmployeeId);
+                  
+                    SecretSantaData sss=    new SecretSantaData
+                    {
+                        ID = emp.EmployeeId,
+                      //  Entity = entity.Name,
+                        Name = emp.Name,
+                        Email = emp.Email,
+                        //Department = joinedData.department.Name,
+                        SecretSantaEmployeeId = semp.EmployeeId,
+                       // SecretSantaEmployeeEntity = joinedData.secretSantaData.Employee.Name,
+                        SecretSantaEmployeeName = semp.Name,
+                        SecretSantaEmployeeEmail = semp.Email,
+                       // SecretSantaEmployeeDepartment = joinedData.secretSantaData.Employee.Department.Name,
+                        EmailSent = si.EmailSent
+                    };
+                        secretSantaDatas.Add(sss);
+                    }
+                }
+
+             
+                if (secretSantaDatas != null && secretSantaDatas.Any())
+                {
+                    return Ok(secretSantaDatas);
+                }
+                else
+                {
+                    return BadRequest("No data to display");
+                }
+            }
+            else
+            {
+                return BadRequest("Year Mismatch 😏");
+            }
+        }
+
+        [HttpGet("secretsanta/read/{targetYear:int}/{entID:int}/{location}")]
+        public IActionResult ReadSecretSantaFilteredData([FromRoute] int targetYear, int entID,string location)
+        {
+
+
+            List<SecretSantaData> secretSantaDatas = new List<SecretSantaData>();
+            if (targetYear != 0)
+            {
+                var secret = context.SecretSantaData.Where(e => ((DateTime)e.CreatedDate).Year == targetYear).ToList();
+
+
+
+                if (secret != null)
+                {
+                    foreach (var si in secret)
+                    {
+                        var emp = context.Employees.Where(e=>e.EntityId==entID&&e.Location==location).FirstOrDefault(s => s.EmployeeId == si.EmployeeId);
+                        var semp = context.Employees.Where(e => e.EntityId == entID && e.Location == location).FirstOrDefault(s => s.EmployeeId == si.SecretSantaEmployeeId);
+                        if(emp != null&&semp!=null)
+                        {
+                            SecretSantaData sss = new SecretSantaData
+                            {
+                                ID = emp.EmployeeId,
+                                //  Entity = entity.Name,
+                                Name = emp.Name,
+                                Email = emp.Email,
+                                //Department = joinedData.department.Name,
+                                SecretSantaEmployeeId = semp.EmployeeId,
+                                // SecretSantaEmployeeEntity = joinedData.secretSantaData.Employee.Name,
+                                SecretSantaEmployeeName = semp.Name,
+                                SecretSantaEmployeeEmail = semp.Email,
+                                // SecretSantaEmployeeDepartment = joinedData.secretSantaData.Employee.Department.Name,
+                                EmailSent = si.EmailSent
+                            };
+                            secretSantaDatas.Add(sss);
+                        }
+                       
+                    }
+                }
+
+
+                if (secretSantaDatas != null && secretSantaDatas.Any())
+                {
+                    return Ok(secretSantaDatas);
+                }
+                else
+                {
+                    return BadRequest("No data to display");
+                }
+            }
+            else
+            {
+                return BadRequest("Year Mismatch 😏");
+            }
+        }
+
+
+        [HttpGet("entity/read")]
+        public IActionResult ReadEmployeeEntity()
+        {
+            List<Entity> entities = new List<Entity>();
+            var employeesWithDetails = context.EntityLs.ToList();
+
+        
+            return Ok(employeesWithDetails);
+
+        }
+        [HttpGet("department/read")]
+        public IActionResult ReadEmployeeDepartment()
+        {
+            var employeesWithDetails = context.Employees.Select(e => e.Name).ToList();
+
+           
+
+            return Ok(employeesWithDetails);
+
+            
+        }
+        [HttpGet("createdDate/read")]
+        public IActionResult ReadCreatedDate()
+        {
+            var distinctYears = context.SecretSantaData
+                                .Where(x => x.CreatedDate.HasValue)
+                                .Select(x => x.CreatedDate.Value.Year)
+                                .Distinct()
+                                .ToList();
+
+
+
+            return Ok(distinctYears);
+
+
+        }
+
+        [HttpDelete("delete/{id}")]
+        public IActionResult DeleteEmployee(string id)
+        {
+            var employeeToDelete = context.Employees.FirstOrDefault(e => e.EmployeeId == id);
+
+            if (employeeToDelete != null)
+            {
+                var secretSantaEmp = context.SecretSantaData.Where(e => e.EmployeeId == id || e.SecretSantaEmployeeId == id).ToList();
+
+                if (secretSantaEmp.Count > 0)
+                {
+                    context.SecretSantaData.RemoveRange(secretSantaEmp);
+                    context.SaveChanges();
+                }
+
+                context.Employees.Remove(employeeToDelete);
+                context.SaveChanges();
+                return Ok();
+            }
+
+            return BadRequest("Employee Not Found...!!");
+        }
+
 
     }
 }

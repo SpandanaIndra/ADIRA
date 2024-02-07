@@ -5,9 +5,7 @@ namespace ADIRA.Server.Models;
 
 public partial class Employee
 {
-    public int Id { get; set; }
-
-    public string? EmployeeId { get; set; }
+    public string EmployeeId { get; set; } = null!;
 
     public int? UserId { get; set; }
 
@@ -23,11 +21,17 @@ public partial class Employee
 
     public int? DepartmentId { get; set; }
 
+    public string? Location { get; set; }
+
     public virtual DepartmentL? Department { get; set; }
 
     public virtual EntityL? Entity { get; set; }
 
     public virtual Role? Role { get; set; }
+
+    public virtual ICollection<SecretSantaDatum> SecretSantaDatumEmployees { get; set; } = new List<SecretSantaDatum>();
+
+    public virtual ICollection<SecretSantaDatum> SecretSantaDatumSecretSantaEmployees { get; set; } = new List<SecretSantaDatum>();
 
     public virtual User? User { get; set; }
 }
